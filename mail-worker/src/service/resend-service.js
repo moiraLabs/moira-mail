@@ -1,6 +1,5 @@
 import emailService from './email-service';
 import { emailConst } from '../const/entity-const';
-import BizError from '../error/biz-error';
 
 const resendService = {
 
@@ -40,8 +39,9 @@ const resendService = {
 
 		const emailRow = await emailService.updateEmailStatus(c, params)
 
+		// No Cloud Mail row: website/probe traffic, or webhook beat the insert.
 		if (!emailRow) {
-			throw new BizError('更新邮件状态记录失败');
+			return
 		}
 
 	}

@@ -121,7 +121,11 @@ app.use('*', async (c, next) => {
 	}
 
 	const { userId, token } = result;
-	const authInfo = await c.env.kv.get(KvConst.AUTH_INFO + userId, { type: 'json' });
+	let authInfo = await c.env.kv.get(KvConst.AUTH_INFO + userId, { type: 'json' });
+	for (let i = 0; i < 4 && !authInfo; i++) {
+		await new Promise(resolve => setTimeout(resolve, 200));
+		authInfo = await c.env.kv.get(KvConst.AUTH_INFO + userId, { type: 'json' });
+	}
 
 	if (!authInfo) {
 		throw new BizError(t('authExpired'), 401);

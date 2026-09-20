@@ -144,7 +144,7 @@
         </el-button>
       </div>
     </el-dialog>
-    <a v-show="settingStore.settings.projectLink" class="github" href="https://github.com/maillab/cloud-mail">
+    <a v-show="settingStore.settings.projectLink" class="github" href="https://moira.fun">
       <Icon icon="mingcute:github-line" color="#1890ff" width="20" height="20" />
     </a>
   </div>
@@ -433,15 +433,29 @@ const submit = () => {
   loginLoading.value = true
   login(email, form.password).then(async data => {
     await saveToken(data.token)
+  }).catch(() => {
   }).finally(() => {
     loginLoading.value = false
   })
 }
 
+async function fetchLoginUser(retries = 5) {
+  let lastError = null
+  for (let i = 0; i < retries; i++) {
+    try {
+      return await loginUserInfo({ noMsg: true })
+    } catch (e) {
+      lastError = e
+      await new Promise(resolve => setTimeout(resolve, 250 * (i + 1)))
+    }
+  }
+  throw lastError
+}
+
 async function saveToken(token) {
   localStorage.setItem('token', token)
   refreshWebsiteConfig()
-  const user = await loginUserInfo();
+  const user = await fetchLoginUser()
   accountStore.currentAccountId = user.account.accountId;
   accountStore.currentAccount = user.account;
   userStore.user = user;
@@ -449,7 +463,7 @@ async function saveToken(token) {
   routers.forEach(routerData => {
     router.addRoute('layout', routerData);
   });
-  await router.replace({name: 'layout'})
+  await router.replace({ path: '/inbox' })
   uiStore.showNotice()
   oauthLoading.value = false;
   bindLoading.value = false;

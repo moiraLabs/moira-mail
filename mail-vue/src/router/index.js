@@ -110,7 +110,7 @@ router.beforeEach((to, from, next) => {
     }
 
     if (token && to.path.startsWith('/login')) {
-        return next(from.path)
+        return next({ path: '/inbox' })
     }
 
     next()
